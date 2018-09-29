@@ -2,7 +2,7 @@
 
 import logging
 from tkinter import Tk
-from master_win import master_win
+from master_win import MasterWin
 
 if __name__ == '__main__':
     # Set up logger
@@ -11,5 +11,5 @@ if __name__ == '__main__':
                         level=logging.DEBUG)
 
     root = Tk()
-    my_gui = master_win(root)
+    my_gui = MasterWin(root)
     root.mainloop()
