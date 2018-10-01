@@ -3,7 +3,7 @@
 """ Master window module for project Alperose. """
 
 from tkinter import Label, Button
-from pprint import pprint
+from collections import OrderedDict
 from logger import logging
 from DataAccess import DataAccess
 
@@ -16,17 +16,30 @@ class MasterWin:
         self.master = master
         master.title('Mario Control Center')
 
-        self._data = self.read_data()
+        # Read data from json file
+        logging.debug('Read data from json')
+        self._data = read_data()
 
+        # Define plants, subsystems and informations
+        self._plants = OrderedDict({'moms': ['Mamis', self._moms],
+                                    'shoots': ['Steckis', self._shoots],
+                                    'veg': ['Vegi', self._veg],
+                                    'buds': ['Buds', self._buds]})
+        self._subsystems = \
+            OrderedDict({'system': 'System', 'maintenance': 'Wartung', 'lamp':
+                         'Lampe', 'fan': 'Lueftung', 'pump': 'Pumpe'})
+        self._informations = \
+            OrderedDict({'runtime': 'System laeuft seit', 'waterexchange':
+                         'Letzter Wasserwechsel', 'tempair': 'Lufttemperatur',
+                         'tempwater': 'Wassertemperatur'})
+
+        # Set up all labels, buttons and indicators
+        logging.debug('Set up labels')
         self.labels()
+        logging.debug('Set up buttons')
         self.buttons()
+        logging.debug('Set up indicators')
         self.indicators()
-
-    def read_data(self):
-
-        """ Method to read data from json file. """
-
-        return DataAccess('data.json').read()
 
     def labels(self):
 
@@ -40,38 +53,20 @@ class MasterWin:
         self._d_labels['title'] = Label(self.master,
                                         text='Super Mario Control Center',
                                         height=height)
-        self._d_labels['system'] = Label(self.master, text='System',
+        for skey, sval in self._subsystems.items():
+            self._d_labels[skey] = Label(self.master, text=sval,
                                          width=width, height=height)
-        self._d_labels['maintenance'] = Label(self.master, text='Wartung',
-                                              width=width, height=height)
-        self._d_labels['lamp'] = Label(self.master, text='Lampe', width=width,
-                                       height=height)
-        self._d_labels['fan'] = Label(self.master, text='Luefter', width=width,
-                                      height=height)
-        self._d_labels['pump'] = Label(self.master, text='Pumpe', width=width,
-                                       height=height)
-        self._d_labels['runtime'] = Label(self.master, text='System Laufzeit',
-                                          width=width, height=height)
-        self._d_labels['water_exchange'] = Label(self.master,
-                                                 text='Letzter Wasserwechsel',
-                                                 width=width, height=height)
-        self._d_labels['temp_air'] = Label(self.master, text='Lufttemperatur',
-                                           width=width, height=height)
-        self._d_labels['temp_water'] = Label(self.master,
-                                             text='Wassertemperatur',
-                                             width=width, height=height)
+        for ikey, ival in self._informations.items():
+            self._d_labels[ikey] = Label(self.master, text=ival,
+                                         width=width, height=height)
 
         # Positioning of labels
         self._d_labels['title'].grid(row=0, column=1, columnspan=4)
-        self._d_labels['system'].grid(row=2, column=0)
-        self._d_labels['maintenance'].grid(row=3, column=0)
-        self._d_labels['lamp'].grid(row=4, column=0)
-        self._d_labels['fan'].grid(row=5, column=0)
-        self._d_labels['pump'].grid(row=6, column=0)
-        self._d_labels['runtime'].grid(row=7, column=0)
-        self._d_labels['water_exchange'].grid(row=8, column=0)
-        self._d_labels['temp_air'].grid(row=9, column=0)
-        self._d_labels['temp_water'].grid(row=10, column=0)
+        for sidx, skey in enumerate(self._subsystems):
+            self._d_labels[skey].grid(row=sidx+2, column=0)
+        for iidx, ikey in enumerate(self._informations):
+            self._d_labels[ikey].grid(row=iidx+2+len(self._subsystems),
+                                      column=0)
 
     def buttons(self):
 
@@ -82,24 +77,14 @@ class MasterWin:
 
         # Dictionary storing all buttons
         self._d_buttons = {}
-        self._d_buttons['moms'] = Button(self.master, text='Mamis',
-                                         command=self.moms, width=width,
-                                         height=height)
-        self._d_buttons['shoots'] = Button(self.master, text='Steckis',
-                                           command=self.shoots, width=width,
-                                           height=height)
-        self._d_buttons['veg'] = Button(self.master, text='Vegis',
-                                        command=self.veg, width=width,
-                                        height=height)
-        self._d_buttons['buds'] = Button(self.master, text='Buds',
-                                         command=self.buds, width=width,
-                                         height=height)
+        for pkey, pval in self._plants.items():
+            self._d_buttons[pkey] = \
+                Button(self.master, text=pval[0], command=pval[1], width=width,
+                       height=height)
 
         # Positioning of buttons
-        self._d_buttons['moms'].grid(row=1, column=1)
-        self._d_buttons['shoots'].grid(row=1, column=2)
-        self._d_buttons['veg'].grid(row=1, column=3)
-        self._d_buttons['buds'].grid(row=1, column=4)
+        for pidx, pkey in enumerate(self._plants):
+            self._d_buttons[pkey].grid(row=1, column=pidx+1)
 
     def indicators(self):
 
@@ -109,67 +94,71 @@ class MasterWin:
         width = 15
         height = 2
 
-        # Set up shortcuts to dictionaries from json data
-        moms = self._data['moms']
-        shoots = self._data['shoots']
-        veg = self._data['veg']
-        buds = self._data['buds']
-
         # Dictionary storing all indicators
         self._d_indicators = {}
-        self._d_indicators['mom_system'] = \
-            Label(self.master, text=onOffText(moms['system']), width=width, height=height,
-                  bg=onOffBg(moms['system']))
-        self._d_indicators['mom_maintenance'] = \
-            Label(self.master, text=onOffText(moms['maintenance']), width=width, height=height,
-                  bg=onOffBg(moms['maintenance']))
+        for pkey in self._plants:
+            for skey in self._subsystems:
+                gkey = get_global_key([pkey, skey])
+                self._d_indicators[gkey] = \
+                    Label(self.master,
+                          text=on_off_text(self._data[pkey][skey]),
+                          width=width, height=height,
+                          bg=on_off_bg(self._data[pkey][skey]))
 
         # Positioning of indicators
-        self._d_indicators['mom_system'].grid(row=2, column=1)
-        self._d_indicators['mom_maintenance'].grid(row=3, column=1)
+        for pidx, pkey in enumerate(self._plants):
+            for sidx, skey in enumerate(self._subsystems):
+                gkey = get_global_key([pkey, skey])
+                self._d_indicators[gkey].grid(row=sidx+2, column=pidx+1)
 
-        # Colors of indicators
-        #self._d_indicators['mom_system'].
-
-        #labSystem=Label(self.Hauptfenster,text="System",height=2)
-        #self.labSystemZustandMamis=Label(self.Hauptfenster,text=self.systemZustand(0,1),height=2,width=10)
-        #self.labSystemZustandSteckis=Label(self.Hauptfenster,text=self.systemZustand(1,1),height=2,width=10)
-        #self.labSystemZustandVegis=Label(self.Hauptfenster,text=self.systemZustand(2,1),height=2,width=10)
-        #self.labSystemZustandBuds=Label(self.Hauptfenster,text=self.systemZustand(3,1),height=2,width=10)
-
-
-    def moms(self):
+    def _moms(self):
 
         """ Method called when pressing the moms button. """
 
         print('Inside function moms()')
 
-    def shoots(self):
+    def _shoots(self):
 
         """ Method called when pressing the shoots button. """
 
         print('Inside function shoots()')
 
-    def veg(self):
+    def _veg(self):
 
         """ Method called when pressing the veg button. """
 
         print('Inside function veg()')
 
-    def buds(self):
+    def _buds(self):
 
         """ Method called when pressing the buds button. """
 
         print('Inside function buds()')
 
-def onOffText(n):
-    if n == 0:
-        return 'OFF'
-    else:
-        return 'ON'
 
-def onOffBg(n):
-    if n == 0:
-        return '#D00000'
-    else:
-        return '#248232'
+def read_data():
+
+    """ Method to read data from json file. """
+
+    return DataAccess('data.json').read()
+
+
+def on_off_text(n):
+
+    """ Returns OFF, when n=0, ON otherwise. """
+
+    return 'OFF' if n == 0 else 'ON'
+
+
+def on_off_bg(n):
+
+    """ Return bg colors for off/on. """
+
+    return '#D00000' if n == 0 else '#248232'
+
+
+def get_global_key(l):
+
+    """ Return global key formed from a list of keys. """
+
+    return '_'.join([str(x) for x in l])
