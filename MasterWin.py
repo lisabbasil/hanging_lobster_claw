@@ -2,7 +2,7 @@
 
 """ Master window module for project Alperose. """
 
-from tkinter import Label, Button
+from tkinter import Label, Button, Frame
 from collections import OrderedDict
 from logger import logging
 from DataAccess import DataAccess
@@ -14,7 +14,7 @@ class MasterWin:
 
     def __init__(self, master):
         self.master = master
-        master.title('Mario Control Center')
+        master.title('Super Mario Control Center')
 
         # Read data from json file
         logging.debug('Read data from json')
@@ -61,7 +61,7 @@ class MasterWin:
                                          width=width, height=height)
 
         # Positioning of labels
-        self._d_labels['title'].grid(row=0, column=1, columnspan=4)
+        self._d_labels['title'].grid(row=0, column=0, columnspan=5)
         for sidx, skey in enumerate(self._subsystems):
             self._d_labels[skey].grid(row=sidx+2, column=0)
         for iidx, ikey in enumerate(self._informations):
@@ -115,7 +115,47 @@ class MasterWin:
 
         """ Method called when pressing the moms button. """
 
-        print('Inside function moms()')
+        pkey = 'moms'
+
+        width = 25
+        height = 2
+
+        self._d_moms = {}
+
+        # Adding horizontal line
+        self._d_moms['hr'] = Frame(self.master, height=2,width=500,bg="black")
+        self._d_moms['hr'].grid(row=99, column=0, columnspan=5)
+
+        # Adding content at the bottom
+        self._d_moms[get_global_key([pkey, 'title'])] = \
+            Label(self.master, text='Mamis', height=height)
+        for skey, sval in self._subsystems.items():
+            self._d_moms[get_global_key([pkey, skey])] = \
+                Label(self.master, text=sval, width=width, height=height)
+
+        # Positioning of labels
+        self._d_moms[get_global_key([pkey, 'title'])].\
+            grid(row=100, column=0, columnspan=5)
+        for sidx, skey in enumerate(self._subsystems):
+            self._d_moms[get_global_key([pkey, skey])].\
+                grid(row=sidx+102, column=0)
+
+        width = 15
+        height = 2
+
+        # Dictionary storing all indicators
+        for skey in self._subsystems:
+            gkey = get_global_key([pkey, skey])
+            self._d_moms[gkey] = \
+                Button(self.master,
+                       text=on_off_text(self._data[pkey][skey]),
+                       width=width, height=height,
+                       bg=on_off_bg(self._data[pkey][skey]))
+
+        # Positioning of indicators
+        for sidx, skey in enumerate(self._subsystems):
+            gkey = get_global_key([pkey, skey])
+            self._d_moms[gkey].grid(row=sidx+102, column=1)
 
     def _shoots(self):
 
