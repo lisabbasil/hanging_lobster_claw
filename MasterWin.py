@@ -2,7 +2,7 @@
 
 """ Master window module for project Alperose. """
 
-from tkinter import Label, Button, Frame
+from tkinter import Tk, Label, Button, Frame
 from collections import OrderedDict
 from logger import logging
 from DataAccess import DataAccess
@@ -115,6 +115,8 @@ class MasterWin:
 
         """ Method called when pressing the moms button. """
 
+        test = Tk()
+
         pkey = 'moms'
 
         width = 25
@@ -128,10 +130,10 @@ class MasterWin:
 
         # Adding content at the bottom
         self._d_moms[get_global_key([pkey, 'title'])] = \
-            Label(self.master, text='Mamis', height=height)
+            Label(test, text='Mamis', height=height)
         for skey, sval in self._subsystems.items():
             self._d_moms[get_global_key([pkey, skey])] = \
-                Label(self.master, text=sval, width=width, height=height)
+                Label(test, text=sval, width=width, height=height)
 
         # Positioning of labels
         self._d_moms[get_global_key([pkey, 'title'])].\
@@ -147,7 +149,7 @@ class MasterWin:
         for skey in self._subsystems:
             gkey = get_global_key([pkey, skey])
             self._d_moms[gkey] = \
-                Button(self.master,
+                Button(test,
                        text=on_off_text(self._data[pkey][skey]),
                        width=width, height=height,
                        bg=on_off_bg(self._data[pkey][skey]))
