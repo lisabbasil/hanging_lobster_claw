@@ -1,0 +1,30 @@
+{
+    "moms": {
+        "system": 0,
+        "maintenance": 0,
+        "lamp": 0,
+        "fan": 1,
+        "pump": 1
+    },
+    "shoots": {
+        "system": 0,
+        "maintenance": 0,
+        "lamp": 0,
+        "fan": 1,
+        "pump": 0
+    },
+    "veg": {
+        "system": 0,
+        "maintenance": 0,
+        "lamp": 0,
+        "fan": 0,
+        "pump": 1
+    },
+    "buds": {
+        "system": 1,
+        "maintenance": 0,
+        "lamp": 0,
+        "fan": 0,
+        "pump": 0
+    }
+}
