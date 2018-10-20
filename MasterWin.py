@@ -7,38 +7,11 @@ from collections import OrderedDict
 from logger import logging
 from DataAccess import DataAccess
 
-
-def _moms():
-
-    """ Function called when pressing the moms button. """
-
-    moms = Tk()
-    moms_win = SubWin(moms, 'Arschzapfe')
-
-def _shoots():
-
-    """ Function called when pressing the shoots button. """
-
-    print('Inside function shoots()')
-
-def _veg():
-
-    """ Function called when pressing the veg button. """
-
-    print('Inside function veg()')
-
-def _buds():
-
-    """ Function called when pressing the buds button. """
-
-    print('Inside function buds()')
-
-def read_data():
-
-    """ Function to read data from json file. """
-
-    return DataAccess('data.json').read()
-
+# TODO: Check todo's throughout document
+# TODO: Clean up with Syntastic
+# TODO: Review all docstrings. Things are moving here!
+# TODO: When creating elements and positioning them, you make the same loop
+# twice, should they be merged and done in one step?
 
 def on_off_text(n):
 
@@ -60,15 +33,21 @@ def get_global_key(l):
 
     return '_'.join([str(x) for x in l])
 
+def read_data():
+
+    """ Function to read data from json file. """
+
+    return DataAccess('data.json').read()
+
+
 class MasterWin:
 
     """ Master window for project Alperose. """
 
     # Define plants, subsystems and informations
-    _plants = OrderedDict({'moms': ['Mamis', _moms],
-                                'shoots': ['Steckis', _shoots],
-                                'veg': ['Vegi', _veg],
-                                'buds': ['Buds', _buds]})
+    #_plants = OrderedDict({'moms': 'Mamis', 'shoots': 'Steckis', 'veg': 'Vegi',
+    #                       'buds': 'Buds'})
+    _plants = OrderedDict({'moms': 'Mamis', 'shoots': 'Steckis', 'veg': 'Vegi'})
     _subsystems = \
         OrderedDict({'system': 'System', 'maintenance': 'Wartung', 'lamp':
                      'Lampe', 'fan': 'Lueftung', 'pump': 'Pumpe'})
@@ -78,7 +57,7 @@ class MasterWin:
                      'tempwater': 'Wassertemperatur'})
 
     # Read data from json file
-    logging.debug('Read data from json')
+    logging.info('Read data from json')
     _data = read_data()
 
     def __init__(self, master):
@@ -86,11 +65,11 @@ class MasterWin:
         master.title('Super Mario Control Center')
 
         # Set up all labels, buttons and indicators in master window
-        logging.debug('Set up labels in window master')
+        logging.info('Set up labels in window master')
         self.labels(self.master)
-        logging.debug('Set up buttons in window master')
+        logging.info('Set up buttons in window master')
         self.buttons(self.master)
-        logging.debug('Set up indicators in window master')
+        logging.info('Set up indicators in window master')
         self.indicators(self.master)
 
     def labels(self, window):
@@ -129,26 +108,31 @@ class MasterWin:
 
         # Dictionary storing all buttons
         self._d_buttons = {}
-        for pkey, pval in self._plants.items():
+        for pidx, (pkey, pval) in enumerate(self._plants.items()):
             self._d_buttons[pkey] = \
-                Button(window, text=pval[0], command=pval[1], width=width,
-                       height=height)
+                Button(window, text=pval,
+                       command=lambda pidx=pidx: self._open_sub_window(pidx),
+                       width=width, height=height)
 
         # Positioning of buttons
         for pidx, pkey in enumerate(self._plants):
             self._d_buttons[pkey].grid(row=1, column=pidx+1)
 
-    def indicators(self, window):
+    def indicators(self, window, show_columns = []):
 
         """ Initialize and place all indicators in window. Indicators typically
-        show if a system is on or off. """
+        show if a system is on or off. Show only columns that are in list
+        show_columns. If show_columns is empty, show all. """
 
         width = 15
         height = 2
 
         # Dictionary storing all indicators
         self._d_indicators = {}
-        for pkey in self._plants:
+        for pidx, pkey in enumerate(self._plants):
+            if show_columns and pidx not in show_columns:
+                logging.debug('Skip indicators %s, since index %s is not in show_columns list %s' % (pkey, pidx, show_columns))
+                continue
             for skey in self._subsystems:
                 gkey = get_global_key([pkey, skey])
                 self._d_indicators[gkey] = \
@@ -159,16 +143,28 @@ class MasterWin:
 
         # Positioning of indicators
         for pidx, pkey in enumerate(self._plants):
+            if show_columns and pidx not in show_columns:
+                continue
             for sidx, skey in enumerate(self._subsystems):
                 gkey = get_global_key([pkey, skey])
                 self._d_indicators[gkey].grid(row=sidx+2, column=pidx+1)
+
+    def _open_sub_window(self, pidx):
+
+        """ Function called when pressing the moms button. """
+
+        self.subwin = Tk()
+        SubWin(self.subwin, pidx, 'Arschzapfe')
 
 
 class SubWin(MasterWin):
 
     """ Sub window class for project Alperose. """
 
-    def __init__(self, slave, title):
+    def __init__(self, slave, pidx, title):
+
+        logging.info('Create sub window with index %s and title %s'
+                      % (pidx, title))
 
         self.slave = slave
         slave.title(title)
@@ -181,12 +177,12 @@ class SubWin(MasterWin):
         height = 2
 
         # Set up all labels, buttons and indicators in slave window
-        logging.debug('Set up labels in window slave')
+        logging.info('Set up labels in window slave')
         self.labels(self.slave)
-        #logging.debug('Set up buttons in window slave')
+        #logging.info('Set up buttons in window slave')
         #self.buttons(self.slave)
-        logging.debug('Set up indicators in window slave')
-        self.indicators(self.slave)
+        logging.info('Set up indicators in window slave')
+        self.indicators(self.slave, [pidx])
 
 
         ## Adding content at the bottom

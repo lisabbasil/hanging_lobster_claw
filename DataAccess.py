@@ -13,14 +13,14 @@ class DataAccess:
 
     def __init__(self, filename):
         self._filename = filename
-        logging.debug('Initialize DataAccess object for reading json file %s' %
+        logging.info('Initialize DataAccess object for reading json file %s' %
                       filename)
 
     def read(self):
 
         """ Read from json file. """
 
-        logging.debug('Read json data from %s' % self._filename)
+        logging.info('Read json data from %s' % self._filename)
         with open(self._filename) as json:
             data = load(json)
 

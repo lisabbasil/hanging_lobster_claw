@@ -7,5 +7,6 @@ from logger import logging
 if __name__ == '__main__':
 
     root = Tk()
-    alperose = MasterWin(root)
+    #alperose = MasterWin(root)
+    MasterWin(root)
     root.mainloop()
