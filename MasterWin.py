@@ -14,6 +14,12 @@ from DataAccess import DataAccess
 # TODO: Currently, the json gets completely rewritten when a change occurs,
 #       maybe it would be faster if only the change is written (likely doesn't
 #       make a difference, though)
+# TODO: Check if all the dictionaries (e.g. _d_labels) should be class
+#       variables instead of object variables
+# TODO: Currently you pass both arguments self.master and 'master' to the
+#       indicators method. You could merge them by identifiying the window from
+#       self.master only (e.g. by using a method like get_title() or
+#       something).
 
 def on_off_text(n):
 
@@ -43,10 +49,13 @@ class MasterWin:
     # Define plants, subsystems and informations
     #_plants = OrderedDict({'moms': 'Mamis', 'shoots': 'Steckis', 'veg': 'Vegi',
     #                       'buds': 'Buds'})
-    _plants = OrderedDict({'moms': 'Mamis', 'shoots': 'Steckis', 'veg': 'Vegi'})
+    #_plants = OrderedDict({'moms': 'Mamis', 'shoots': 'Steckis', 'veg': 'Vegi'})
+    _plants = OrderedDict({'moms': 'Mamis', 'shoots': 'Steckis'})
+    #_subsystems = \
+    #    OrderedDict({'system': 'System', 'maintenance': 'Wartung', 'lamp':
+    #                 'Lampe', 'fan': 'Lueftung', 'pump': 'Pumpe'})
     _subsystems = \
-        OrderedDict({'system': 'System', 'maintenance': 'Wartung', 'lamp':
-                     'Lampe', 'fan': 'Lueftung', 'pump': 'Pumpe'})
+        OrderedDict({'system': 'System', 'maintenance': 'Wartung'})
     _informations = \
         OrderedDict({'runtime': 'System laeuft seit', 'waterexchange':
                      'Letzter Wasserwechsel', 'tempair': 'Lufttemperatur',
@@ -56,6 +65,9 @@ class MasterWin:
     logging.info('Read data from json')
     _jsonobject = DataAccess('data.json')
     _data = _jsonobject.read()
+
+    # Dictionaries storing all the Tkinter objects
+    _d_indicators = {}
 
     def __init__(self, master):
         self.master = master
@@ -67,7 +79,7 @@ class MasterWin:
         logging.info('Set up buttons in window master')
         self.buttons(self.master)
         logging.info('Set up indicators in window master')
-        self.indicators(self.master)
+        self.indicators(self.master, 'master')
 
     def labels(self, window, title=''):
 
@@ -115,7 +127,7 @@ class MasterWin:
         for pidx, pkey in enumerate(self._plants):
             self._d_buttons[pkey].grid(row=1, column=pidx+1)
 
-    def indicators(self, window, show_columns = []):
+    def indicators(self, window, windowname, show_columns = []):
 
         """ Initialize and place all indicators in window. Indicators typically
         show if a system is on or off. Show only columns that are in list
@@ -125,13 +137,12 @@ class MasterWin:
         height = 2
 
         # Dictionary storing all indicators
-        self._d_indicators = {}
         for pidx, pkey in enumerate(self._plants):
             if show_columns and pidx not in show_columns:
                 logging.debug('Skip indicators %s, since index %s is not in show_columns list %s' % (pkey, pidx, show_columns))
                 continue
             for skey in self._subsystems:
-                gkey = get_global_key([pkey, skey])
+                gkey = get_global_key([windowname, pkey, skey])
                 self._d_indicators[gkey] = \
                     Button(window,
                            text=on_off_text(self._data[pkey][skey]),
@@ -144,7 +155,7 @@ class MasterWin:
             if show_columns and pidx not in show_columns:
                 continue
             for sidx, skey in enumerate(self._subsystems):
-                gkey = get_global_key([pkey, skey])
+                gkey = get_global_key([windowname, pkey, skey])
                 self._d_indicators[gkey].grid(row=sidx+2, column=pidx+1)
 
     def _open_sub_window(self, pidx, title):
@@ -168,10 +179,17 @@ class MasterWin:
         elif self._data[pkey][skey] == 0:
             self._data[pkey][skey] = 1
 
-        # Change color and text of button
-        self._d_indicators[get_global_key([pkey, skey])]\
+        # Change color and text of button in master window
+        self._d_indicators[get_global_key(['master', pkey, skey])]\
             .configure(bg=on_off_bg(self._data[pkey][skey]),
                        text=on_off_text(self._data[pkey][skey]))
+        # Change color and text of button in slave window (if it exists)
+        try:
+            self._d_indicators[get_global_key(['slave', pkey, skey])]\
+                .configure(bg=on_off_bg(self._data[pkey][skey]),
+                           text=on_off_text(self._data[pkey][skey]))
+        except KeyError:
+            pass
 
         # Write changes to file
         logging.debug('Foo01: %s' % self._data)
@@ -203,4 +221,4 @@ class SubWin(MasterWin):
         #logging.info('Set up buttons in window slave')
         #self.buttons(self.slave)
         logging.info('Set up indicators in window slave')
-        self.indicators(self.slave, [pidx])
+        self.indicators(self.slave, 'slave', [pidx])
