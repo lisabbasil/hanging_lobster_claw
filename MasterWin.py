@@ -7,7 +7,6 @@ from collections import OrderedDict
 from logger import logging
 from DataAccess import DataAccess
 
-# TODO: Check todo's throughout document
 # TODO: Clean up with Syntastic
 # TODO: Review all docstrings. Things are moving here!
 # TODO: When creating elements and positioning them, you make the same loop
@@ -136,10 +135,11 @@ class MasterWin:
             for skey in self._subsystems:
                 gkey = get_global_key([pkey, skey])
                 self._d_indicators[gkey] = \
-                    Label(window,
-                          text=on_off_text(self._data[pkey][skey]),
-                          width=width, height=height,
-                          bg=on_off_bg(self._data[pkey][skey]))
+                    Button(window,
+                           text=on_off_text(self._data[pkey][skey]),
+                           width=width, height=height,
+                           bg=on_off_bg(self._data[pkey][skey]),
+                           command=lambda pkey=pkey, skey=skey: self.toggle(pkey, skey))
 
         # Positioning of indicators
         for pidx, pkey in enumerate(self._plants):
@@ -155,6 +155,26 @@ class MasterWin:
 
         self.subwin = Tk()
         SubWin(self.subwin, pidx, title)
+
+    def toggle(self, pkey, skey):
+
+        """ Toggle on/off indicator with plant key pkey and subsystem key skey.
+        """
+
+        logging.info("Toggle %s %s, which currently is %s" % (pkey, skey,
+            self._data[pkey][skey]))
+
+        # Toggle data
+        if self._data[pkey][skey] == 1:
+            self._data[pkey][skey] = 0
+        elif self._data[pkey][skey] == 0:
+            self._data[pkey][skey] = 1
+
+        # Change color of button
+        self._d_indicators[get_global_key([pkey, skey])]\
+            .configure(bg=on_off_bg(self._data[pkey][skey]),
+                       text=on_off_text(self._data[pkey][skey]))
+        return
 
 
 class SubWin(MasterWin):
@@ -174,11 +194,6 @@ class SubWin(MasterWin):
         width = 25
         height = 2
 
-        #DONT SHOW BUTTONS. BUT SHOW TITLES
-
-
-
-
         # Set up all labels, buttons and indicators in slave window
         logging.info('Set up labels in window slave')
         self.labels(self.slave, title)
@@ -186,35 +201,3 @@ class SubWin(MasterWin):
         #self.buttons(self.slave)
         logging.info('Set up indicators in window slave')
         self.indicators(self.slave, [pidx])
-
-
-        ## Adding content at the bottom
-        #self._d_moms[get_global_key([pkey, 'title'])] = \
-        #    Label(test, text='Mamis', height=height)
-        #for skey, sval in self._subsystems.items():
-        #    self._d_moms[get_global_key([pkey, skey])] = \
-        #        Label(test, text=sval, width=width, height=height)
-
-        ## Positioning of labels
-        #self._d_moms[get_global_key([pkey, 'title'])].\
-        #    grid(row=100, column=0, columnspan=5)
-        #for sidx, skey in enumerate(self._subsystems):
-        #    self._d_moms[get_global_key([pkey, skey])].\
-        #        grid(row=sidx+102, column=0)
-
-        #width = 15
-        #height = 2
-
-        ## Dictionary storing all indicators
-        #for skey in self._subsystems:
-        #    gkey = get_global_key([pkey, skey])
-        #    self._d_moms[gkey] = \
-        #        Button(test,
-        #               text=on_off_text(self._data[pkey][skey]),
-        #               width=width, height=height,
-        #               bg=on_off_bg(self._data[pkey][skey]))
-
-        ## Positioning of indicators
-        #for sidx, skey in enumerate(self._subsystems):
-        #    gkey = get_global_key([pkey, skey])
-        #    self._d_moms[gkey].grid(row=sidx+102, column=1)
