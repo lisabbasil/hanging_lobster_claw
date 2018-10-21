@@ -6,6 +6,7 @@ from tkinter import Tk, Label, Button, Frame
 from collections import OrderedDict
 from logger import logging
 from DataAccess import DataAccess
+from actions import *
 
 # TODO: Clean up with Syntastic
 # TODO: Review all docstrings. Things are moving here!
@@ -20,6 +21,7 @@ from DataAccess import DataAccess
 #       indicators method. You could merge them by identifiying the window from
 #       self.master only (e.g. by using a method like get_title() or
 #       something).
+# TODO: Using eval to call all the actions is evil.
 
 def on_off_text(n):
 
@@ -148,7 +150,7 @@ class MasterWin:
                            text=on_off_text(self._data[pkey][skey]),
                            width=width, height=height,
                            bg=on_off_bg(self._data[pkey][skey]),
-                           command=lambda pkey=pkey, skey=skey: self.toggle(pkey, skey))
+                           command=lambda pkey=pkey, skey=skey: self._action(pkey, skey))
 
         # Positioning of indicators
         for pidx, pkey in enumerate(self._plants):
@@ -165,7 +167,19 @@ class MasterWin:
         self.subwin = Tk()
         SubWin(self.subwin, pidx, title)
 
-    def toggle(self, pkey, skey):
+    def _action(self, pkey, skey):
+
+        """ Action taken depending on pkey and skey. An action is an event that
+        happens in real life, e.g. turn on/off light or pump water. """
+
+        try:
+            eval(get_global_key([pkey, skey]))()
+        except NameError:
+            logging.warning('I do not have an action for the name %s()' %
+                    get_global_key([pkey, skey]))
+        self._toggle(pkey, skey)
+
+    def _toggle(self, pkey, skey):
 
         """ Toggle on/off indicator with plant key pkey and subsystem key skey.
         """
@@ -192,7 +206,6 @@ class MasterWin:
             pass
 
         # Write changes to file
-        logging.debug('Foo01: %s' % self._data)
         self._jsonobject.write(self._data)
 
         return

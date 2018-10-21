@@ -11,7 +11,7 @@
         "lamp": 1,
         "maintenance": 0,
         "pump": 0,
-        "system": 1
+        "system": 0
     },
     "shoots": {
         "fan": 1,

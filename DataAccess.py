@@ -34,6 +34,6 @@ class DataAccess:
         """ Write to json file. """
 
         logging.info('Write data to json file %s' % self._filename)
-        logging.debug('Foo02: Data to write: %s' % data)
+        logging.debug('Data to write: %s' % data)
         with open(self._filename, 'w') as jf:
             dump(data, jf, sort_keys=True, indent=4)
