@@ -66,13 +66,13 @@ class MasterWin:
 
         # Set up all labels, buttons and indicators in master window
         logging.info('Set up labels in window master')
-        self.labels(self.master)
+        self.labels(self.master, 'Super Mario Control Center')
         logging.info('Set up buttons in window master')
         self.buttons(self.master)
         logging.info('Set up indicators in window master')
         self.indicators(self.master)
 
-    def labels(self, window):
+    def labels(self, window, title=''):
 
         """ Initialize and place all labels in window. """
 
@@ -81,9 +81,9 @@ class MasterWin:
 
         # Dictionary storing all labels
         self._d_labels = {}
-        self._d_labels['title'] = Label(window,
-                                        text='Super Mario Control Center',
-                                        height=height)
+        self._d_labels['title'] = Label(window, font=(24),
+                                        text=title,
+                                        height=4)
         for skey, sval in self._subsystems.items():
             self._d_labels[skey] = Label(window, text=sval,
                                          width=width, height=height)
@@ -111,7 +111,7 @@ class MasterWin:
         for pidx, (pkey, pval) in enumerate(self._plants.items()):
             self._d_buttons[pkey] = \
                 Button(window, text=pval,
-                       command=lambda pidx=pidx: self._open_sub_window(pidx),
+                       command=lambda pidx=pidx, pval=pval: self._open_sub_window(pidx, pval),
                        width=width, height=height)
 
         # Positioning of buttons
@@ -149,12 +149,12 @@ class MasterWin:
                 gkey = get_global_key([pkey, skey])
                 self._d_indicators[gkey].grid(row=sidx+2, column=pidx+1)
 
-    def _open_sub_window(self, pidx):
+    def _open_sub_window(self, pidx, title):
 
         """ Function called when pressing the moms button. """
 
         self.subwin = Tk()
-        SubWin(self.subwin, pidx, 'Arschzapfe')
+        SubWin(self.subwin, pidx, title)
 
 
 class SubWin(MasterWin):
@@ -168,17 +168,20 @@ class SubWin(MasterWin):
 
         self.slave = slave
         slave.title(title)
-        title = Label(self.slave, text=title)
-        title.grid(row=0, column=0, columnspan=5)
 
         #pkey = 'moms'
 
         width = 25
         height = 2
 
+        #DONT SHOW BUTTONS. BUT SHOW TITLES
+
+
+
+
         # Set up all labels, buttons and indicators in slave window
         logging.info('Set up labels in window slave')
-        self.labels(self.slave)
+        self.labels(self.slave, title)
         #logging.info('Set up buttons in window slave')
         #self.buttons(self.slave)
         logging.info('Set up indicators in window slave')
