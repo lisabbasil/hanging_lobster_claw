@@ -10,7 +10,10 @@ from DataAccess import DataAccess
 # TODO: Clean up with Syntastic
 # TODO: Review all docstrings. Things are moving here!
 # TODO: When creating elements and positioning them, you make the same loop
-# twice, should they be merged and done in one step?
+#       twice, should they be merged and done in one step?
+# TODO: Currently, the json gets completely rewritten when a change occurs,
+#       maybe it would be faster if only the change is written (likely doesn't
+#       make a difference, though)
 
 def on_off_text(n):
 
@@ -32,12 +35,6 @@ def get_global_key(l):
 
     return '_'.join([str(x) for x in l])
 
-def read_data():
-
-    """ Function to read data from json file. """
-
-    return DataAccess('data.json').read()
-
 
 class MasterWin:
 
@@ -57,7 +54,8 @@ class MasterWin:
 
     # Read data from json file
     logging.info('Read data from json')
-    _data = read_data()
+    _jsonobject = DataAccess('data.json')
+    _data = _jsonobject.read()
 
     def __init__(self, master):
         self.master = master
@@ -161,7 +159,7 @@ class MasterWin:
         """ Toggle on/off indicator with plant key pkey and subsystem key skey.
         """
 
-        logging.info("Toggle %s %s, which currently is %s" % (pkey, skey,
+        logging.info('Toggle %s %s, which currently is %s' % (pkey, skey,
             self._data[pkey][skey]))
 
         # Toggle data
@@ -170,10 +168,15 @@ class MasterWin:
         elif self._data[pkey][skey] == 0:
             self._data[pkey][skey] = 1
 
-        # Change color of button
+        # Change color and text of button
         self._d_indicators[get_global_key([pkey, skey])]\
             .configure(bg=on_off_bg(self._data[pkey][skey]),
                        text=on_off_text(self._data[pkey][skey]))
+
+        # Write changes to file
+        logging.debug('Foo01: %s' % self._data)
+        self._jsonobject.write(self._data)
+
         return
 
 
