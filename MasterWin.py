@@ -57,7 +57,7 @@ class MasterWin:
     #    OrderedDict({'system': 'System', 'maintenance': 'Wartung', 'lamp':
     #                 'Lampe', 'fan': 'Lueftung', 'pump': 'Pumpe'})
     _subsystems = \
-        OrderedDict({'system': 'System', 'maintenance': 'Wartung'})
+        OrderedDict({'system': 'System', 'lamp': 'Lampe'})
     _informations = \
         OrderedDict({'runtime': 'System laeuft seit', 'waterexchange':
                      'Letzter Wasserwechsel', 'tempair': 'Lufttemperatur',
@@ -220,13 +220,9 @@ class SubWin(MasterWin):
         logging.info('Create sub window with index %s and title %s'
                       % (pidx, title))
 
+        self.pidx = pidx
         self.slave = slave
         slave.title(title)
-
-        #pkey = 'moms'
-
-        width = 25
-        height = 2
 
         # Set up all labels, buttons and indicators in slave window
         logging.info('Set up labels in window slave')
