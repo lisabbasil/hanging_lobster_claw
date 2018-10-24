@@ -63,7 +63,7 @@ class MasterWin:
     #    OrderedDict({'system': 'System', 'maintenance': 'Wartung', 'lamp':
     #                 'Lampe', 'fan': 'Lueftung', 'pump': 'Pumpe'})
     _subsystems = \
-        OrderedDict({'system': 'System', 'lamp2': 'Lampe'})
+        OrderedDict({'system': 'System', 'lamp': 'Lampe'})
     _informations = \
         OrderedDict({'runtime': 'System laeuft seit', 'waterexchange':
                      'Letzter Wasserwechsel', 'tempair': 'Lufttemperatur',
@@ -165,6 +165,7 @@ class MasterWin:
             for sidx, skey in enumerate(self._subsystems):
                 gkey = get_global_key([windowname, pkey, skey])
                 self._d_indicators[gkey].grid(row=sidx+2, column=pidx+1)
+                logging.critical('Foo01: row: %s; column: %s; gkey: %s' % (sidx+2, pidx+1, gkey))
 
     def _get_data(self, pkey, skey):
 
@@ -251,3 +252,33 @@ class SubWin(MasterWin):
         #self.buttons(self.slave)
         logging.info('Set up indicators in window slave')
         self.indicators(self.slave, 'slave', [pidx])
+        logging.info('Set up scheduling in window slave')
+        self.schedule(self.slave)
+
+    def schedule(self, window):
+
+        """ Initialize and place all schedule related options. """
+
+        # Dictionary storing all schedule related objects
+        self._d_schedule = {}
+
+        # Scheduling for lamp
+        try:
+            # Try getting the index of the lamp, which only works if lamp is in
+            # the dictionary
+            sidx = tuple(self._subsystems).index('lamp')
+        except ValueError:
+            # If lamp is not in the dictionary, throw warning
+            logging.warning('No lamp found')
+        else:
+            # If lamp was found, carry on
+            logging.debug('Set options for lamp, pidx={} and sidx={}'
+                          .format(self.pidx, sidx))
+
+            # TODO: row/column needs to be dynamic
+            self._d_schedule['lamp_on'] = Label(window, text='Lamp ON', width=20, height=5)
+            self._d_schedule['lamp_on'].grid(row=3, column=2)
+
+            #popupMenu = OptionMenu(mainframe, tkvar, *choices)
+
+        logging.critical('Foo02: Now I do some other stuff, doesn\'t matter if I\'ve found sidx or not.')
