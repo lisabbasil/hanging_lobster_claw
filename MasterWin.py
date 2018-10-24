@@ -22,6 +22,12 @@ from actions import *
 #       self.master only (e.g. by using a method like get_title() or
 #       something).
 # TODO: Using eval to call all the actions is evil.
+# TODO: In the method _get_data(), if the key combination is not found in the
+#       json file, an error is thrown. This means that a new key combination
+#       can only be introduced by editing the json file by hand at first. It
+#       might be better to throw a warning instead of an error, assume default
+#       values for the unknown key combinations and store them in the json.
+#       Next time it will be a known key combination.
 
 def on_off_text(n):
 
@@ -57,7 +63,7 @@ class MasterWin:
     #    OrderedDict({'system': 'System', 'maintenance': 'Wartung', 'lamp':
     #                 'Lampe', 'fan': 'Lueftung', 'pump': 'Pumpe'})
     _subsystems = \
-        OrderedDict({'system': 'System', 'lamp': 'Lampe'})
+        OrderedDict({'system': 'System', 'lamp2': 'Lampe'})
     _informations = \
         OrderedDict({'runtime': 'System laeuft seit', 'waterexchange':
                      'Letzter Wasserwechsel', 'tempair': 'Lufttemperatur',
@@ -147,9 +153,9 @@ class MasterWin:
                 gkey = get_global_key([windowname, pkey, skey])
                 self._d_indicators[gkey] = \
                     Button(window,
-                           text=on_off_text(self._data[pkey][skey]),
+                           text=on_off_text(self._get_data(pkey, skey)),
                            width=width, height=height,
-                           bg=on_off_bg(self._data[pkey][skey]),
+                           bg=on_off_bg(self._get_data(pkey, skey)),
                            command=lambda pkey=pkey, skey=skey: self._action(pkey, skey))
 
         # Positioning of indicators
@@ -159,6 +165,20 @@ class MasterWin:
             for sidx, skey in enumerate(self._subsystems):
                 gkey = get_global_key([windowname, pkey, skey])
                 self._d_indicators[gkey].grid(row=sidx+2, column=pidx+1)
+
+    def _get_data(self, pkey, skey):
+
+        """ Return data from json file for plant key pkey and subsystem key
+        skey. Throw error if key combination not found in json file. """
+
+        try:
+            return self._data[pkey][skey]
+        except KeyError:
+            msg = 'The key combination plant \"{}\" and subsystem \"{}\" '\
+                  'could not be found in the json file.'.format(pkey, skey)
+            logging.error(msg)
+            logging.error('Exit.')
+            raise
 
     def _open_sub_window(self, pidx, title):
 
@@ -185,23 +205,23 @@ class MasterWin:
         """
 
         logging.info('Toggle %s %s, which currently is %s' % (pkey, skey,
-            self._data[pkey][skey]))
+            self._get_data(pkey, skey)))
 
         # Toggle data
-        if self._data[pkey][skey] == 1:
+        if self._get_data(pkey, skey) == 1:
             self._data[pkey][skey] = 0
-        elif self._data[pkey][skey] == 0:
+        elif self._get_data(pkey, skey) == 0:
             self._data[pkey][skey] = 1
 
         # Change color and text of button in master window
         self._d_indicators[get_global_key(['master', pkey, skey])]\
-            .configure(bg=on_off_bg(self._data[pkey][skey]),
-                       text=on_off_text(self._data[pkey][skey]))
+            .configure(bg=on_off_bg(self._get_data(pkey, skey)),
+                       text=on_off_text(self._get_data(pkey, skey)))
         # Change color and text of button in slave window (if it exists)
         try:
             self._d_indicators[get_global_key(['slave', pkey, skey])]\
-                .configure(bg=on_off_bg(self._data[pkey][skey]),
-                           text=on_off_text(self._data[pkey][skey]))
+                .configure(bg=on_off_bg(self._get_data(pkey, skey)),
+                           text=on_off_text(self._get_data(pkey, skey)))
         except KeyError:
             pass
 
